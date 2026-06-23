@@ -9,6 +9,7 @@ interface FormCInteractiveProps {
 }
 
 export default function FormCInteractive({ onSuccess }: FormCInteractiveProps) {
+  const [catalogNumber, setCatalogNumber] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<'all' | 'gourmet' | 'goods' | 'experience'>('all');
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [detailProduct, setDetailProduct] = useState<Product | null>(null);
@@ -66,6 +67,9 @@ export default function FormCInteractive({ onSuccess }: FormCInteractiveProps) {
     if (!selectedProduct) {
       errors.product = 'お届け先を入力する前に、まずは上記カタログより商品を選択してください。';
     }
+    if (!catalogNumber.trim()) {
+      errors.catalogNumber = 'カタログ番号は必須です。';
+    }
     if (!name.trim()) errors.name = 'お名前は必須です。';
     if (!kana.trim()) {
       errors.kana = 'フリガナは必須です。';
@@ -109,6 +113,7 @@ export default function FormCInteractive({ onSuccess }: FormCInteractiveProps) {
         const submission = saveSubmission({
           formType: 'interactive',
           formTypeLabel: 'WEBカタログ一体型',
+          catalogNumber: catalogNumber.trim().toUpperCase(),
           productCode: selectedProduct.code,
           productName: selectedProduct.name,
           recipientName: name.trim(),
@@ -306,6 +311,35 @@ export default function FormCInteractive({ onSuccess }: FormCInteractiveProps) {
 
             <div className={`space-y-4 ${!selectedProduct ? 'pointer-events-none opacity-50' : ''}`}>
               
+              {/* カタログ番号 */}
+              <div>
+                <label htmlFor="inter-catalogNumber" className="block text-xs font-bold text-slate-600 mb-1">
+                  カタログ番号 <span className="text-red-500">*</span>
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    id="inter-catalogNumber"
+                    type="text"
+                    disabled={!selectedProduct}
+                    value={catalogNumber}
+                    onChange={(e) => setCatalogNumber(e.target.value)}
+                    placeholder="例：CAT-2026-PLATINUM"
+                    className="flex-1 text-sm bg-slate-50 border border-slate-300 rounded-lg px-3.5 py-2.5 focus:outline-hidden focus:ring-4 focus:ring-blue-100 focus:border-blue-500 transition-all font-mono uppercase tracking-wider"
+                  />
+                  <button
+                    type="button"
+                    disabled={!selectedProduct}
+                    onClick={() => setCatalogNumber('CAT-2026-PLATINUM')}
+                    className="bg-slate-100 hover:bg-slate-200 active:bg-slate-300 disabled:bg-slate-50 text-slate-700 font-medium text-xs rounded-lg px-4 py-2.5 transition-all cursor-pointer border border-slate-300 shadow-2xs"
+                  >
+                    デモ番号入力
+                  </button>
+                </div>
+                {addressErrors.catalogNumber && (
+                  <p className="text-xs text-red-600 mt-1">⚠️ {addressErrors.catalogNumber}</p>
+                )}
+              </div>
+
               {/* 名前 */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>

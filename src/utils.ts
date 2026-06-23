@@ -52,7 +52,15 @@ export function getSubmissions(): CatalogSubmission[] {
     return [];
   }
   try {
-    return JSON.parse(data);
+    const parsed = JSON.parse(data);
+    if (Array.isArray(parsed)) {
+      // 既存の古いデータにカタログ番号がなければ安全に補完する
+      return parsed.map((item: any) => ({
+        ...item,
+        catalogNumber: item.catalogNumber || 'CAT-2026-GOLD'
+      }));
+    }
+    return [];
   } catch (e) {
     return [];
   }
@@ -88,8 +96,9 @@ export function initializeDummyData() {
         id: 'REQ-1703328000000-456',
         formType: 'simple',
         formTypeLabel: 'ハガキ風ワンページ',
-        productCode: 'G-101',
-        productName: '極上 松阪牛 すき焼き用（400g）',
+        catalogNumber: 'CAT-2026-GOLD',
+        productCode: '10001',
+        productName: 'Sippole コトコト煮込んだヤギミルクスープ（12袋セット）',
         recipientName: '佐藤 健太',
         recipientKana: 'サトウ ケンタ',
         postalCode: '100-0001',
@@ -104,8 +113,9 @@ export function initializeDummyData() {
         id: 'REQ-1703329000000-789',
         formType: 'step',
         formTypeLabel: 'ステップ・バイ・ステップ',
-        productCode: 'Z-201',
-        productName: '今治プレミアム極細極やわらかオーガニックタオルセット',
+        catalogNumber: 'CAT-2026-SILVER',
+        productCode: '70001',
+        productName: 'Sippole 3WAY消臭お散歩バッグ',
         recipientName: '鈴木 美咲',
         recipientKana: 'スズキ ミサキ',
         postalCode: '530-0001',
@@ -119,15 +129,16 @@ export function initializeDummyData() {
         id: 'REQ-1703330000000-111',
         formType: 'interactive',
         formTypeLabel: 'WEBカタログ一体型',
-        productCode: 'E-301',
-        productName: '名湯の旅 箱根 富士を望む日帰り貸切露天風呂ペア御招待券',
+        catalogNumber: 'CAT-2026-PLATINUM',
+        productCode: '80001',
+        productName: 'Sippole 2WAYもちふわオーバルベッド',
         recipientName: '高橋 茂',
         recipientKana: 'タカハシ シゲル',
         postalCode: '460-0001',
         address: '愛知県名古屋市中区三の丸1丁目1-1',
         phone: '052-111-2222',
         email: 'shigeru.t@example.com',
-        notes: '結婚祝いの返礼品として申し込みます。',
+        notes: '愛犬のために申し込みます。楽しみです！',
         status: 'pending',
         createdAt: new Date().toISOString() // 今日
       }

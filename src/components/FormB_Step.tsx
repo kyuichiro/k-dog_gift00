@@ -10,6 +10,7 @@ interface FormBStepProps {
 
 export default function FormBStep({ onSuccess }: FormBStepProps) {
   const [step, setStep] = useState(1);
+  const [catalogNumber, setCatalogNumber] = useState('');
   const [authCode, setAuthCode] = useState('');
   const [pinCode, setPinCode] = useState('');
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
@@ -36,12 +37,17 @@ export default function FormBStep({ onSuccess }: FormBStepProps) {
   const setDemoAuth = (code: string) => {
     setAuthCode(code);
     setPinCode('1234');
+    setCatalogNumber('CAT-2026-SILVER');
     setAuthError('');
   };
 
   // ステップ1: 認証チェック
   const handleNextStep2 = () => {
     setAuthError('');
+    if (!catalogNumber.trim()) {
+      setAuthError('カタログ番号を入力してください。');
+      return;
+    }
     if (!authCode.trim()) {
       setAuthError('お申込番号を入力してください。');
       return;
@@ -139,6 +145,7 @@ export default function FormBStep({ onSuccess }: FormBStepProps) {
         const submission = saveSubmission({
           formType: 'step',
           formTypeLabel: 'ステップ・バイ・ステップ',
+          catalogNumber: catalogNumber.trim().toUpperCase(),
           productCode: selectedProduct.code,
           productName: selectedProduct.name,
           recipientName: name.trim(),
@@ -216,21 +223,35 @@ export default function FormBStep({ onSuccess }: FormBStepProps) {
                     お申込番号のご確認
                   </h3>
                   <p className="text-xs text-slate-500 mt-1">
-                    カタログに同封されている「お申込番号」と「確認コード」を入力してください。
+                    カタログまたはハガキに記載されている「カタログ番号」「お申込番号」「確認コード」を入力してください。
                   </p>
                 </div>
 
                 <div className="space-y-4 max-w-md mx-auto">
                   <div>
-                    <label htmlFor="step-authCode" className="block text-xs font-semibold text-slate-600 mb-1">
-                      お申込番号（半角英数字）
+                    <label htmlFor="step-catalogNumber" className="block text-xs font-semibold text-slate-600 mb-1 text-center sm:text-left">
+                      カタログ番号（半角英数字） <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      id="step-catalogNumber"
+                      type="text"
+                      value={catalogNumber}
+                      onChange={(e) => setCatalogNumber(e.target.value)}
+                      placeholder="例：CAT-2026-SILVER"
+                      className="w-full text-sm font-mono uppercase tracking-widest bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 focus:outline-hidden focus:ring-4 focus:ring-emerald-100 focus:border-emerald-600 transition-all text-center"
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="step-authCode" className="block text-xs font-semibold text-slate-600 mb-1 text-center sm:text-left">
+                      お申込番号（半角英数字） <span className="text-red-500">*</span>
                     </label>
                     <input
                       id="step-authCode"
                       type="text"
                       value={authCode}
                       onChange={(e) => setAuthCode(e.target.value)}
-                      placeholder="例：G-101"
+                      placeholder="例：10001"
                       className="w-full text-sm font-mono uppercase tracking-widest bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 focus:outline-hidden focus:ring-4 focus:ring-emerald-100 focus:border-emerald-600 transition-all text-center"
                     />
                   </div>
@@ -262,17 +283,17 @@ export default function FormBStep({ onSuccess }: FormBStepProps) {
                     <div className="flex flex-wrap gap-2 justify-center sm:justify-start">
                       <button
                         type="button"
-                        onClick={() => setDemoAuth('G-101')}
+                        onClick={() => setDemoAuth('10001')}
                         className="bg-white border border-emerald-200 hover:border-emerald-600 text-emerald-800 font-mono text-[11px] px-2.5 py-1 rounded shadow-2xs hover:shadow-xs transition-all cursor-pointer"
                       >
-                        G-101（松阪牛）をセット
+                        10001（ヤギミルクスープ）をセット
                       </button>
                       <button
                         type="button"
-                        onClick={() => setDemoAuth('Z-201')}
+                        onClick={() => setDemoAuth('70001')}
                         className="bg-white border border-emerald-200 hover:border-emerald-600 text-emerald-800 font-mono text-[11px] px-2.5 py-1 rounded shadow-2xs hover:shadow-xs transition-all cursor-pointer"
                       >
-                        Z-201（今治タオル）をセット
+                        70001（お散歩バッグ）をセット
                       </button>
                     </div>
                   </div>
@@ -517,6 +538,12 @@ export default function FormBStep({ onSuccess }: FormBStepProps) {
                   <div className="border border-slate-200 rounded-xl overflow-hidden">
                     <table className="w-full text-left border-collapse">
                       <tbody>
+                        <tr className="border-b border-slate-100">
+                          <th className="w-24 bg-slate-50 p-2.5 font-bold text-slate-600 align-top">カタログ番号</th>
+                          <td className="p-2.5 text-slate-800 font-mono font-medium">
+                            {(catalogNumber || '').toUpperCase()}
+                          </td>
+                        </tr>
                         <tr className="border-b border-slate-100">
                           <th className="w-24 bg-slate-50 p-2.5 font-bold text-slate-600 align-top">お名前</th>
                           <td className="p-2.5 text-slate-800 font-medium">

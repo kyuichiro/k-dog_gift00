@@ -11,6 +11,8 @@ interface AdminDashboardProps {
 export default function AdminDashboard({ submissions, onDataChange }: AdminDashboardProps) {
   const [selectedSub, setSelectedSub] = useState<CatalogSubmission | null>(null);
   const [filterStatus, setFilterStatus] = useState<'all' | 'pending' | 'processing' | 'shipped'>('all');
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
+  const [showNoDataError, setShowNoDataError] = useState(false);
 
   // ステータスの日本語・カラーマッピング
   const statusConfig = {
@@ -27,27 +29,33 @@ export default function AdminDashboard({ submissions, onDataChange }: AdminDashb
     }
   };
 
-  const handleDelete = (id: string) => {
-    if (window.confirm('このお申込みデータを削除してもよろしいですか？（デモ環境のみの削除です）')) {
-      deleteSubmission(id);
+  const handleDeleteClick = (id: string) => {
+    setDeleteTargetId(id);
+  };
+
+  const confirmDelete = () => {
+    if (deleteTargetId) {
+      deleteSubmission(deleteTargetId);
       onDataChange();
-      if (selectedSub && selectedSub.id === id) {
+      if (selectedSub && selectedSub.id === deleteTargetId) {
         setSelectedSub(null);
       }
+      setDeleteTargetId(null);
     }
   };
 
   // CSVダウンロードシミュレーション
   const handleExportCSV = () => {
     if (submissions.length === 0) {
-      alert('書き出すデータがありません。');
+      setShowNoDataError(true);
       return;
     }
 
-    const headers = ['受付番号', '利用フォーム', '商品コード', '商品名', 'お名前', 'フリガナ', '郵便番号', '住所', '電話番号', 'メール', '備考', '状況', '受付日時'];
+    const headers = ['受付番号', '利用フォーム', 'カタログ番号', '商品コード', '商品名', 'お名前', 'フリガナ', '郵便番号', '住所', '電話番号', 'メール', '備考', '状況', '受付日時'];
     const rows = submissions.map(sub => [
       sub.id,
       sub.formTypeLabel,
+      sub.catalogNumber,
       sub.productCode,
       sub.productName,
       sub.recipientName,
@@ -57,7 +65,7 @@ export default function AdminDashboard({ submissions, onDataChange }: AdminDashb
       sub.phone,
       sub.email || '',
       sub.notes || '',
-      statusConfig[sub.status].label,
+      (statusConfig[sub.status] || statusConfig.pending).label,
       new Date(sub.createdAt).toLocaleString('ja-JP')
     ]);
 
@@ -195,9 +203,14 @@ export default function AdminDashboard({ submissions, onDataChange }: AdminDashb
                       <p className="text-[10px] text-slate-400 font-sans tracking-wide mt-0.5">{sub.recipientKana}</p>
                     </td>
                     <td className="p-4">
-                      <span className="font-mono font-bold bg-slate-100 border border-slate-200 text-slate-700 px-1.5 py-0.25 rounded text-[10px]">
-                        {sub.productCode}
-                      </span>
+                      <div className="flex gap-1.5 items-center">
+                        <span className="font-mono font-bold bg-blue-50 border border-blue-100 text-blue-800 px-1.5 py-0.25 rounded text-[10px] uppercase" title="カタログ番号">
+                          {sub.catalogNumber}
+                        </span>
+                        <span className="font-mono font-bold bg-slate-100 border border-slate-200 text-slate-700 px-1.5 py-0.25 rounded text-[10px]" title="商品コード">
+                          {sub.productCode}
+                        </span>
+                      </div>
                       <p className="font-medium text-slate-700 mt-1 line-clamp-1">{sub.productName}</p>
                     </td>
                     <td className="p-4">
@@ -211,7 +224,7 @@ export default function AdminDashboard({ submissions, onDataChange }: AdminDashb
                         value={sub.status}
                         onChange={(e) => handleStatusChange(sub.id, e.target.value as any)}
                         className={`text-[11px] font-bold border rounded-lg px-2.5 py-1 focus:outline-hidden focus:ring-2 focus:ring-slate-200 transition-all cursor-pointer ${
-                          statusConfig[sub.status].bg
+                          (statusConfig[sub.status] || statusConfig.pending).bg
                         }`}
                       >
                         <option value="pending">受付完了</option>
@@ -231,7 +244,7 @@ export default function AdminDashboard({ submissions, onDataChange }: AdminDashb
                         </button>
                         <button
                           type="button"
-                          onClick={() => handleDelete(sub.id)}
+                          onClick={() => handleDeleteClick(sub.id)}
                           className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-md transition-colors cursor-pointer"
                           title="削除"
                         >
@@ -267,15 +280,23 @@ export default function AdminDashboard({ submissions, onDataChange }: AdminDashb
 
             <div className="p-6 space-y-4 text-xs">
               
-              {/* 商品情報 */}
-              <div>
-                <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">ご希望商品</h4>
-                <div className="bg-slate-50 border border-slate-150 rounded-xl p-3 flex items-center justify-between">
-                  <div>
+              {/* カタログ情報＆商品情報 */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">カタログ番号</h4>
+                  <div className="bg-slate-50 border border-slate-150 rounded-xl p-3">
+                    <span className="font-mono font-bold bg-blue-50 border border-blue-100 text-blue-800 px-1.5 py-0.25 rounded text-[10px] uppercase">
+                      {selectedSub.catalogNumber}
+                    </span>
+                  </div>
+                </div>
+                <div>
+                  <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">ご希望商品</h4>
+                  <div className="bg-slate-50 border border-slate-150 rounded-xl p-3">
                     <span className="font-mono font-bold bg-slate-200 text-slate-700 px-1.5 py-0.25 rounded text-[10px]">
                       {selectedSub.productCode}
                     </span>
-                    <p className="font-bold text-slate-800 mt-1">{selectedSub.productName}</p>
+                    <p className="font-bold text-slate-800 mt-1 truncate">{selectedSub.productName}</p>
                   </div>
                 </div>
               </div>
@@ -353,7 +374,7 @@ export default function AdminDashboard({ submissions, onDataChange }: AdminDashb
             <div className="p-4 border-t border-slate-100 flex items-center justify-between bg-slate-50/50">
               <button
                 type="button"
-                onClick={() => handleDelete(selectedSub.id)}
+                onClick={() => handleDeleteClick(selectedSub.id)}
                 className="text-rose-600 hover:text-rose-800 hover:bg-rose-50 px-3 py-1.5 rounded-lg transition-all text-[11px] font-bold flex items-center gap-1 cursor-pointer"
               >
                 <Trash2 className="w-3.5 h-3.5" />
@@ -366,6 +387,66 @@ export default function AdminDashboard({ submissions, onDataChange }: AdminDashb
                 className="bg-slate-200 hover:bg-slate-300 active:bg-slate-400 text-slate-700 text-[11px] font-bold px-4 py-1.5 rounded-lg transition-all cursor-pointer"
               >
                 閉じる
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 削除確認カスタムモーダル */}
+      {deleteTargetId && (
+        <div className="fixed inset-0 bg-slate-900/65 flex items-center justify-center p-4 z-50 backdrop-blur-xs animate-fadeIn">
+          <div className="bg-white rounded-2xl max-w-sm w-full shadow-2xl border border-slate-100 p-6 animate-scaleUp text-center space-y-4">
+            <div className="w-12 h-12 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center mx-auto">
+              <Trash2 className="w-6 h-6" />
+            </div>
+            <div>
+              <h3 className="font-bold text-slate-800 text-base">お申込みデータの削除</h3>
+              <p className="text-xs text-slate-500 mt-2 leading-relaxed">
+                このお申込みデータを削除してもよろしいですか？<br />
+                <span className="text-rose-600 font-semibold">※この操作は取り消せません。</span>
+              </p>
+            </div>
+            <div className="flex gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setDeleteTargetId(null)}
+                className="flex-1 bg-slate-100 hover:bg-slate-200 active:bg-slate-300 text-slate-700 font-bold text-xs rounded-xl py-3 transition-all cursor-pointer border border-slate-200"
+              >
+                キャンセル
+              </button>
+              <button
+                type="button"
+                onClick={confirmDelete}
+                className="flex-1 bg-rose-600 hover:bg-rose-700 active:bg-rose-800 text-white font-bold text-xs rounded-xl py-3 shadow-sm hover:shadow-md transition-all cursor-pointer"
+              >
+                削除する
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* エクスポート警告カスタムモーダル */}
+      {showNoDataError && (
+        <div className="fixed inset-0 bg-slate-900/65 flex items-center justify-center p-4 z-50 backdrop-blur-xs animate-fadeIn">
+          <div className="bg-white rounded-2xl max-w-sm w-full shadow-2xl border border-slate-100 p-6 animate-scaleUp text-center space-y-4">
+            <div className="w-12 h-12 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto">
+              <Info className="w-6 h-6" />
+            </div>
+            <div>
+              <h3 className="font-bold text-slate-800 text-base">データがありません</h3>
+              <p className="text-xs text-slate-500 mt-2 leading-relaxed">
+                現在、書き出すお申込みデータが存在しません。体験用フォームからいくつかお申込みを完了してから再度お試しください。
+              </p>
+            </div>
+            <div className="pt-2">
+              <button
+                type="button"
+                onClick={() => setShowNoDataError(false)}
+                className="w-full bg-slate-800 hover:bg-slate-900 active:bg-slate-955 text-white font-bold text-xs rounded-xl py-3 shadow-xs hover:shadow-sm transition-all cursor-pointer"
+              >
+                確認しました
               </button>
             </div>
           </div>

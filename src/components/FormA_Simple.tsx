@@ -9,6 +9,7 @@ interface FormASimpleProps {
 }
 
 export default function FormASimple({ onSuccess }: FormASimpleProps) {
+  const [catalogNumber, setCatalogNumber] = useState('');
   const [productCode, setProductCode] = useState('');
   const [matchedProduct, setMatchedProduct] = useState<Product | null>(null);
   
@@ -57,10 +58,15 @@ export default function FormASimple({ onSuccess }: FormASimpleProps) {
   // バリデーション
   const validate = () => {
     const errors: Record<string, string> = {};
+    
+    if (!catalogNumber.trim()) {
+      errors.catalogNumber = 'カタログ番号は必須です。';
+    }
+
     if (!productCode) {
       errors.productCode = '商品番号は必須です。';
     } else if (!matchedProduct) {
-      errors.productCode = '正しい商品番号を入力してください（例：G-101）。';
+      errors.productCode = '正しい商品番号を入力してください（例：10001）。';
     }
 
     if (!name.trim()) errors.name = 'お名前は必須です。';
@@ -112,6 +118,7 @@ export default function FormASimple({ onSuccess }: FormASimpleProps) {
         const submission = saveSubmission({
           formType: 'simple',
           formTypeLabel: 'ハガキ風ワンページ',
+          catalogNumber: catalogNumber.trim().toUpperCase(),
           productCode: productCode.trim().toUpperCase(),
           productName: matchedProduct ? matchedProduct.name : '不明な商品',
           recipientName: name.trim(),
@@ -166,6 +173,25 @@ export default function FormASimple({ onSuccess }: FormASimpleProps) {
 
             <div className="space-y-4">
               <div>
+                <label htmlFor="simple-catalogNumber" className="block text-xs font-semibold text-slate-600 mb-1">
+                  カタログ番号（半角英数字）
+                </label>
+                <input
+                  id="simple-catalogNumber"
+                  type="text"
+                  value={catalogNumber}
+                  onChange={(e) => setCatalogNumber(e.target.value)}
+                  placeholder="例：CAT-2026-GOLD"
+                  className={`w-full text-sm font-mono tracking-widest uppercase bg-slate-50 border ${
+                    formErrors.catalogNumber ? 'border-red-500 focus:ring-red-200' : 'border-slate-300 focus:ring-amber-200'
+                  } rounded-lg px-4 py-3 focus:outline-hidden focus:ring-4 transition-all`}
+                />
+                {formErrors.catalogNumber && (
+                  <p className="text-xs text-red-600 mt-1 flex items-center gap-1">⚠️ {formErrors.catalogNumber}</p>
+                )}
+              </div>
+
+              <div>
                 <label htmlFor="simple-productCode" className="block text-xs font-semibold text-slate-600 mb-1">
                   お申込商品番号（半角英数字）
                 </label>
@@ -175,7 +201,7 @@ export default function FormASimple({ onSuccess }: FormASimpleProps) {
                     type="text"
                     value={productCode}
                     onChange={(e) => setProductCode(e.target.value)}
-                    placeholder="例：G-101"
+                    placeholder="例：10001"
                     className={`w-full text-sm font-mono tracking-widest uppercase bg-slate-50 border ${
                       formErrors.productCode ? 'border-red-500 focus:ring-red-200' : 'border-slate-300 focus:ring-amber-200'
                     } rounded-lg px-4 py-3 focus:outline-hidden focus:ring-4 transition-all`}
@@ -192,19 +218,33 @@ export default function FormASimple({ onSuccess }: FormASimpleProps) {
                 
                 {/* デモ用お試しコード */}
                 <div className="mt-2.5 p-2.5 bg-amber-50/50 border border-amber-200/40 rounded-lg text-xs text-slate-600 leading-relaxed">
-                  💡 <span className="font-semibold text-amber-900">デモでお試し可能な商品コード：</span>
-                  <div className="mt-1 flex flex-wrap gap-1.5 font-mono text-[11px]">
+                  💡 <span className="font-semibold text-amber-900">デモ用お試し入力：</span>
+                  <div className="mt-1.5 flex flex-wrap gap-1.5 font-mono text-[11px] items-center">
+                    <span className="text-slate-500">カタログ番号：</span>
+                    <button
+                      type="button"
+                      onClick={() => setCatalogNumber('CAT-2026-GOLD')}
+                      className="bg-white border border-slate-300 hover:border-amber-600 text-slate-700 px-2 py-0.5 rounded shadow-2xs cursor-pointer"
+                    >
+                      CAT-2026-GOLD
+                    </button>
+                    <span className="text-slate-300">/</span>
+                    <span className="text-slate-500">商品コード：</span>
                     {sampleProducts.slice(0, 3).map(p => (
                       <button
                         key={p.code}
                         type="button"
-                        onClick={() => setProductCode(p.code)}
+                        onClick={() => {
+                          setProductCode(p.code);
+                          if (!catalogNumber) {
+                            setCatalogNumber('CAT-2026-GOLD');
+                          }
+                        }}
                         className="bg-white border border-slate-300 hover:border-amber-600 text-slate-700 px-2 py-0.5 rounded shadow-2xs cursor-pointer"
                       >
                         {p.code}
                       </button>
                     ))}
-                    <span className="text-slate-400 self-center">など</span>
                   </div>
                 </div>
               </div>

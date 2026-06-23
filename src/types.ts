@@ -12,6 +12,7 @@ export interface CatalogSubmission {
   id: string;
   formType: 'simple' | 'step' | 'interactive';
   formTypeLabel: string;
+  catalogNumber: string;
   productCode: string;
   productName: string;
   recipientName: string;
