@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sippole WEBカタログギフト - 単体HTML版</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Google Fonts (Inter) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+    /* アニメーションの追加 */
+    .animate-fadeIn {
+      animation: fadeIn 0.3s ease-out forwards;
+    }
+    .animate-scaleUp {
+      animation: scaleUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes scaleUp {
+      from { opacity: 0; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    /* スクロールバーの非表示・微調整 */
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col antialiased">
+
+  <!-- ヘッダー -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-xs">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center h-16">
+        <div class="flex items-center gap-2.5">
+          <div class="p-2 bg-blue-600 rounded-lg text-white shadow-xs">
+            <i data-lucide="gift" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h1 class="text-sm sm:text-base font-bold text-slate-900 tracking-tight flex items-center gap-1.5">
+              Sippole WEBカタログギフト
+              <span class="text-[10px] bg-blue-100 text-blue-700 font-bold px-2 py-0.5 rounded-full border border-blue-200">
+                単体HTML版 (オフライン対応)
+              </span>
+            </h1>
+            <p class="text-[10px] text-slate-400 hidden sm:block">
+              HTMLファイルをダブルクリックするだけで、全機能を体験・デモ可能なスタンドアロン版
+            </p>
+          </div>
+        </div>
+        
+        <div class="flex items-center gap-2">
+          <button id="tab-form-btn" onclick="switchTab('form')" class="text-xs sm:text-sm px-4 py-2 rounded-xl transition-all font-bold bg-blue-600 text-white shadow-xs flex items-center gap-1.5 cursor-pointer">
+            <i data-lucide="layout" class="w-4 h-4"></i>
+            <span>WEBカタログお申込み</span>
+          </button>
+          <button id="tab-admin-btn" onclick="switchTab('admin')" class="text-xs sm:text-sm px-4 py-2 rounded-xl transition-all text-slate-600 hover:bg-slate-100 flex items-center gap-1.5 relative cursor-pointer">
+            <i data-lucide="clipboard-list" class="w-4 h-4"></i>
+            <span>お申込み管理 (管理者)</span>
+            <span id="pending-badge" class="hidden absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse"></span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- メインコンテンツ -->
+  <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    
+    <!-- ==================== A: 完了画面 (サンクスページ) ==================== -->
+    <div id="thanks-view" class="hidden max-w-xl mx-auto bg-white border border-slate-200 rounded-2xl shadow-lg p-6 sm:p-10 text-center space-y-6 animate-scaleUp">
+      <div class="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4">
+        <i data-lucide="check-circle-2" class="w-10 h-10 stroke-[2.5] animate-bounce"></i>
+      </div>
+      <div class="space-y-2">
+        <h2 class="text-xl font-bold text-slate-900">お申込みを完了いたしました</h2>
+        <p class="text-sm text-slate-500">
+          この度はWEBカタログギフトよりお申込みいただき、誠にありがとうございます。
+        </p>
+      </div>
+      
+      <div class="bg-slate-50 border border-slate-100 rounded-xl p-4 text-left space-y-2 text-xs sm:text-sm text-slate-600">
+        <div class="flex justify-between border-b border-slate-200/60 pb-2">
+          <span class="font-bold text-slate-500">お申込み受付番号：</span>
+          <span id="thanks-id" class="font-mono font-bold text-slate-900">SUB-123456</span>
+        </div>
+        <div class="flex justify-between border-b border-slate-200/60 pb-2">
+          <span class="font-bold text-slate-500">お選びいただいた商品：</span>
+          <span id="thanks-product" class="font-bold text-slate-800 text-right max-w-[240px] truncate">---</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="font-bold text-slate-500">お届け先：</span>
+          <span id="thanks-address" class="text-right max-w-[240px] truncate text-slate-800">---</span>
+        </div>
+      </div>
+
+      <div class="p-4 bg-blue-50 border border-blue-100 rounded-xl text-left text-xs text-blue-800 leading-relaxed space-y-1.5">
+        <p class="font-bold flex items-center gap-1">
+          <i data-lucide="info" class="w-3.5 h-3.5"></i>
+          デモ体験の管理者確認：
+        </p>
+        <p>
+          このお申込みデータは、ブラウザの <strong>localStorage</strong> に即時登録されました。
+          右上の「<strong>お申込み管理 (管理者)</strong>」タブより登録内容の確認、配送ステータス更新、CSVダウンロードをお試しいただけます。
+        </p>
+      </div>
+
+      <div class="pt-4 flex flex-col sm:flex-row gap-3 justify-center">
+        <button onclick="resetSubmissionForm()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl px-6 py-3 transition-all cursor-pointer">
+          もう一度入力する
+        </button>
+        <button onclick="switchTab('admin')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl px-6 py-3 transition-all cursor-pointer">
+          管理者画面でデータを見る
+        </button>
+      </div>
+    </div>
+
+    <!-- ==================== B: フォーム ＆ カタログビュー ==================== -->
+    <div id="form-view" class="space-y-8 animate-fadeIn">
+      
+      <!-- メイングリッド (左: デジタルカタログ, 右: お届け先フォーム ＆ 説明) -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        
+        <!-- 左側：デジタルカタログ (8カラム) -->
+        <div class="lg:col-span-8 space-y-6">
+          <div class="bg-white border border-slate-200 rounded-2xl shadow-xs overflow-hidden">
+            <!-- カタログヘッダー -->
+            <div class="p-5 border-b border-slate-200 bg-slate-50/75 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+                  <i data-lucide="book-open" class="w-5 h-5 text-blue-600"></i>
+                  Sippole デジタルプレミアムカタログ
+                </h2>
+                <p class="text-xs text-slate-500 mt-1">お好きな商品を1点お選びいただき、「この商品を選択する」ボタンを押してください。</p>
+              </div>
+              <!-- カテゴリフィルター -->
+              <div class="flex gap-1.5 bg-slate-200/70 p-1 rounded-xl text-xs">
+                <button onclick="filterCatalog('all')" id="filter-all" class="px-3 py-1.5 rounded-lg font-medium bg-white text-slate-800 shadow-xs cursor-pointer">すべて</button>
+                <button onclick="filterCatalog('gourmet')" id="filter-gourmet" class="px-3 py-1.5 rounded-lg font-medium text-slate-600 hover:text-slate-800 cursor-pointer">グルメ</button>
+                <button onclick="filterCatalog('goods')" id="filter-goods" class="px-3 py-1.5 rounded-lg font-medium text-slate-600 hover:text-slate-800 cursor-pointer">雑貨</button>
+                <button onclick="filterCatalog('experience')" id="filter-experience" class="px-3 py-1.5 rounded-lg font-medium text-slate-600 hover:text-slate-800 cursor-pointer">ベッド</button>
+              </div>
+            </div>
+
+            <!-- 商品リスト -->
+            <div class="p-6">
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-6" id="product-grid">
+                <!-- JavaScriptで動的ロード -->
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 右側：お届け先フォーム ＆ 説明カード (4カラム) -->
+        <div class="lg:col-span-4 space-y-6">
+          
+          <!-- 商品選択ガイダンス -->
+          <div id="selection-guidance" class="bg-amber-50/70 border border-amber-200 rounded-2xl p-4 text-center space-y-3">
+            <div class="w-10 h-10 bg-amber-100 text-amber-700 rounded-full flex items-center justify-center mx-auto">
+              <i data-lucide="arrow-left-right" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <p class="text-xs font-bold text-amber-900">まずはカタログから商品を選んでください</p>
+              <p class="text-[10px] text-amber-700/85 mt-1 leading-relaxed">
+                お好きな商品の「この商品を選択する」ボタンをクリックすると、お申込み用フォームが有効になります。
+              </p>
+            </div>
+          </div>
+
+          <!-- お申込みフォーム (初期は半透明・非活性風、選択時に活性化) -->
+          <div id="form-container" class="bg-white border border-slate-200 rounded-2xl p-5 sm:p-6 shadow-xs opacity-60 transition-all pointer-events-none duration-300">
+            <div class="flex items-center gap-2 pb-4 border-b border-slate-100 mb-4">
+              <div class="w-7 h-7 bg-blue-100 text-blue-700 rounded-full flex items-center justify-center text-xs font-bold">
+                1
+              </div>
+              <h3 class="text-sm font-bold text-slate-800">お届け先情報の入力</h3>
+            </div>
+
+            <form id="submission-form" onsubmit="handleFormSubmit(event)" class="space-y-4">
+              <!-- 選択中商品インジケーター -->
+              <div id="selected-product-banner" class="bg-blue-50 border border-blue-100 rounded-xl p-3 flex items-center gap-3 hidden">
+                <div class="w-10 h-10 rounded-lg overflow-hidden bg-slate-100 flex-shrink-0">
+                  <img id="selected-product-img" src="" alt="Selected Product" class="w-full h-full object-cover">
+                </div>
+                <div class="min-w-0 flex-1">
+                  <p class="text-[9px] text-blue-600 font-bold uppercase tracking-wider">選択中の商品</p>
+                  <p id="selected-product-name" class="text-xs font-bold text-slate-800 truncate">---</p>
+                </div>
+                <button type="button" onclick="clearProductSelection()" class="text-slate-400 hover:text-slate-600 cursor-pointer p-1">
+                  <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+              </div>
+
+              <!-- カタログギフト引換番号 -->
+              <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1 flex justify-between">
+                  <span>ハガキお引換番号 / パスコード <span class="text-red-500 font-normal">※</span></span>
+                  <span class="text-[10px] text-slate-400 font-normal">例: 10001 (自動設定されます)</span>
+                </label>
+                <div class="relative">
+                  <input type="text" id="input-code" required placeholder="例：10001" readonly
+                    class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-xs font-mono font-bold text-slate-800 focus:outline-hidden focus:ring-2 focus:ring-blue-500">
+                  <div class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">
+                    <i data-lucide="lock" class="w-4 h-4"></i>
+                  </div>
+                </div>
+              </div>
+
+              <!-- お名前 -->
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-xs font-bold text-slate-700 mb-1">お名前 (漢字) <span class="text-red-500">※</span></label>
+                  <input type="text" id="input-name" required placeholder="例：山田 太郎"
+                    class="w-full bg-slate-50 hover:bg-slate-100/50 focus:bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-xs text-slate-800 focus:outline-hidden focus:ring-2 focus:ring-blue-500 transition-colors">
+                </div>
+                <div>
+                  <label class="block text-xs font-bold text-slate-700 mb-1">お名前 (フリガナ) <span class="text-red-500">※</span></label>
+                  <input type="text" id="input-kana" required placeholder="例：ヤマダ タロウ"
+                    class="w-full bg-slate-50 hover:bg-slate-100/50 focus:bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-xs text-slate-800 focus:outline-hidden focus:ring-2 focus:ring-blue-500 transition-colors">
+                </div>
+              </div>
+
+              <!-- 郵便番号 ＆ 住所 -->
+              <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1 flex justify-between items-center">
+                  <span>郵便番号 <span class="text-red-500">※</span></span>
+                  <button type="button" onclick="simulateZipSearch()" class="text-[10px] text-blue-600 hover:underline font-bold cursor-pointer">
+                    住所自動入力 (デモ用)
+                  </button>
+                </label>
+                <input type="text" id="input-zip" required placeholder="例：123-4567"
+                  class="w-full bg-slate-50 hover:bg-slate-100/50 focus:bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-xs text-slate-800 focus:outline-hidden focus:ring-2 focus:ring-blue-500 transition-colors">
+              </div>
+
+              <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1">ご住所 <span class="text-red-500">※</span></label>
+                <input type="text" id="input-address" required placeholder="例：東京都渋谷区神南1-2-3 ○○マンション101"
+                  class="w-full bg-slate-50 hover:bg-slate-100/50 focus:bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-xs text-slate-800 focus:outline-hidden focus:ring-2 focus:ring-blue-500 transition-colors">
+              </div>
+
+              <!-- 電話番号 ＆ メールアドレス -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-xs font-bold text-slate-700 mb-1">電話番号 <span class="text-red-500">※</span></label>
+                  <input type="tel" id="input-phone" required placeholder="例：090-0000-0000"
+                    class="w-full bg-slate-50 hover:bg-slate-100/50 focus:bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-xs text-slate-800 focus:outline-hidden focus:ring-2 focus:ring-blue-500 transition-colors">
+                </div>
+                <div>
+                  <label class="block text-xs font-bold text-slate-700 mb-1">メールアドレス <span class="text-slate-400 font-normal">(任意)</span></label>
+                  <input type="email" id="input-email" placeholder="例：your@email.com"
+                    class="w-full bg-slate-50 hover:bg-slate-100/50 focus:bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-xs text-slate-800 focus:outline-hidden focus:ring-2 focus:ring-blue-500 transition-colors">
+                </div>
+              </div>
+
+              <!-- 配達指定・ご要望 -->
+              <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1">備考・お届けに関するご要望 <span class="text-slate-400 font-normal">(任意)</span></label>
+                <textarea id="input-notes" rows="2" placeholder="例：宅配ボックスへの配達を希望します。"
+                  class="w-full bg-slate-50 hover:bg-slate-100/50 focus:bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-xs text-slate-800 focus:outline-hidden focus:ring-2 focus:ring-blue-500 transition-colors resize-none"></textarea>
+              </div>
+
+              <!-- 個人情報同意チェック -->
+              <label class="flex items-start gap-2.5 pt-2 cursor-pointer select-none">
+                <input type="checkbox" required class="mt-0.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500">
+                <span class="text-[10px] text-slate-500 leading-snug">
+                  個人情報の取り扱い、および本ギフトサービスのお届け規約に同意します。
+                </span>
+              </label>
+
+              <!-- 送信ボタン -->
+              <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 active:scale-98 text-white font-bold text-xs py-3.5 px-4 rounded-xl shadow-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer">
+                <i data-lucide="send" class="w-4 h-4"></i>
+                <span>この内容でお申込みを送信する</span>
+              </button>
+            </form>
+          </div>
+
+          <!-- カタログの強み解説カード -->
+          <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-2xs space-y-4">
+            <h4 class="text-xs font-bold text-slate-800 flex items-center gap-1.5 pb-2.5 border-b border-slate-100">
+              <i data-lucide="sparkles" class="text-blue-600 w-4 h-4"></i>
+              WEBカタログ一体型の特徴
+            </h4>
+            <div class="space-y-3">
+              <div class="flex items-start gap-2.5">
+                <div class="p-1 bg-blue-50 text-blue-600 rounded-md mt-0.5">
+                  <i data-lucide="shopping-bag" class="w-3.5 h-3.5"></i>
+                </div>
+                <div>
+                  <h5 class="text-[11px] font-bold text-slate-700">商品画像を見ながら決定可能</h5>
+                  <p class="text-[10px] text-slate-400 mt-0.5 leading-relaxed">
+                    ハガキのようにコードを入力して終わるのではなく、画面上で大きな写真や詳細説明を見ながら、じっくり選択できます。
+                  </p>
+                </div>
+              </div>
+              
+              <div class="flex items-start gap-2.5">
+                <div class="p-1 bg-blue-50 text-blue-600 rounded-md mt-0.5">
+                  <i data-lucide="smartphone" class="w-3.5 h-3.5"></i>
+                </div>
+                <div>
+                  <h5 class="text-[11px] font-bold text-slate-700">ワンストップで完了するCX</h5>
+                  <p class="text-[10px] text-slate-400 mt-0.5 leading-relaxed">
+                    お好きな商品をタップするだけで、ハガキ番号が連動し、そのまま流れるように配送先入力へ進めます。
+                  </p>
+                </div>
+              </div>
+
+              <div class="flex items-start gap-2.5">
+                <div class="p-1 bg-blue-50 text-blue-600 rounded-md mt-0.5">
+                  <i data-lucide="thumbs-up" class="w-3.5 h-3.5"></i>
+                </div>
+                <div>
+                  <h5 class="text-[11px] font-bold text-slate-700">誤入力・誤発送を徹底防止</h5>
+                  <p class="text-[10px] text-slate-400 mt-0.5 leading-relaxed">
+                    ハガキ配送で最も多い「文字の読み間違い」や「記入漏れ」を、リアルタイムのフロントバリデーションでゼロに。
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- ==================== C: 管理画面ビュー ==================== -->
+    <div id="admin-view" class="hidden space-y-6 animate-fadeIn">
+      
+      <!-- 管理画面統計パネル -->
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div class="bg-white border border-slate-200 rounded-xl p-4 flex items-center justify-between">
+          <div>
+            <p class="text-[10px] text-slate-400 font-bold uppercase">総お申込み件数</p>
+            <p id="stat-total" class="text-xl font-bold text-slate-900 mt-0.5">0 件</p>
+          </div>
+          <div class="p-2.5 bg-blue-50 text-blue-600 rounded-lg">
+            <i data-lucide="database" class="w-5 h-5"></i>
+          </div>
+        </div>
+        <div class="bg-white border border-slate-200 rounded-xl p-4 flex items-center justify-between">
+          <div>
+            <p class="text-[10px] text-slate-400 font-bold uppercase">未処理 (受付完了)</p>
+            <p id="stat-pending" class="text-xl font-bold text-amber-600 mt-0.5">0 件</p>
+          </div>
+          <div class="p-2.5 bg-amber-50 text-amber-600 rounded-lg">
+            <i data-lucide="clock" class="w-5 h-5"></i>
+          </div>
+        </div>
+        <div class="bg-white border border-slate-200 rounded-xl p-4 flex items-center justify-between">
+          <div>
+            <p class="text-[10px] text-slate-400 font-bold uppercase">配送中</p>
+            <p id="stat-shipping" class="text-xl font-bold text-blue-600 mt-0.5">0 件</p>
+          </div>
+          <div class="p-2.5 bg-blue-50 text-blue-600 rounded-lg">
+            <i data-lucide="truck" class="w-5 h-5"></i>
+          </div>
+        </div>
+        <div class="bg-white border border-slate-200 rounded-xl p-4 flex items-center justify-between">
+          <div>
+            <p class="text-[10px] text-slate-400 font-bold uppercase">発送完了</p>
+            <p id="stat-completed" class="text-xl font-bold text-emerald-600 mt-0.5">0 件</p>
+          </div>
+          <div class="p-2.5 bg-emerald-50 text-emerald-600 rounded-lg">
+            <i data-lucide="check-circle" class="w-5 h-5"></i>
+          </div>
+        </div>
+      </div>
+
+      <!-- お申込み一覧テーブル -->
+      <div class="bg-white border border-slate-200 rounded-2xl shadow-xs overflow-hidden">
+        
+        <!-- 管理画面操作ヘッダー -->
+        <div class="p-5 border-b border-slate-200 bg-slate-50/75 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
+          <div>
+            <h2 class="text-base font-bold text-slate-900 flex items-center gap-1.5">
+              <i data-lucide="clipboard-list" class="w-5 h-5 text-blue-600"></i>
+              お申込み一覧
+            </h2>
+            <p class="text-xs text-slate-400 mt-0.5">登録されたお申込みの管理、ステータスの更新、CSVファイルへの書き出しが可能です。</p>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <!-- 検索 -->
+            <input type="text" id="admin-search" oninput="renderSubmissions()" placeholder="お名前、商品名で検索..."
+              class="bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-800 placeholder-slate-400 focus:outline-hidden focus:ring-2 focus:ring-blue-500 w-44">
+            
+            <button onclick="downloadCSV()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-4 py-2 rounded-xl flex items-center gap-1.5 shadow-xs cursor-pointer">
+              <i data-lucide="download" class="w-4 h-4"></i>
+              CSVダウンロード
+            </button>
+            <button onclick="clearAllData()" class="bg-red-50 hover:bg-red-100 text-red-600 font-bold text-xs px-3 py-2 rounded-xl flex items-center gap-1 cursor-pointer">
+              <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+              初期化
+            </button>
+          </div>
+        </div>
+
+        <!-- テーブル本体 -->
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs border-collapse">
+            <thead>
+              <tr class="border-b border-slate-200 bg-slate-50 text-slate-500 font-bold">
+                <th class="p-3.5">受付日時</th>
+                <th class="p-3.5">受付番号</th>
+                <th class="p-3.5">カタログ番号</th>
+                <th class="p-3.5">選択された商品</th>
+                <th class="p-3.5">お届け先情報</th>
+                <th class="p-3.5">配送状況</th>
+                <th class="p-3.5 text-center">操作</th>
+              </tr>
+            </thead>
+            <tbody id="submission-rows" class="divide-y divide-slate-100">
+              <!-- JavaScriptで動的生成 -->
+            </tbody>
+          </table>
+        </div>
+        
+        <!-- 空データ時の表示 -->
+        <div id="empty-state" class="hidden p-12 text-center text-slate-400">
+          <i data-lucide="inbox" class="w-12 h-12 mx-auto mb-3 text-slate-300"></i>
+          <p class="text-sm font-bold">登録されているお申込みがありません</p>
+          <p class="text-xs text-slate-400 mt-1">「WEBカタログお申込み」タブより実際に入力してみてください。</p>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- フッター -->
+  <footer class="bg-slate-900 text-slate-400 text-xs py-8 border-t border-slate-800 mt-16 select-none">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-2">
+      <p class="font-bold text-slate-300">Sippole WEBカタログギフトシステム (単体HTML・デモ版)</p>
+      <p class="text-[10px] text-slate-500 leading-relaxed">
+        本システムは、コーディングおよびUX検証用に最適化された、完全に自己完結したHTMLファイルです。<br>
+        実稼働環境への移行時は、APIエンドポイントやデータベースとの接続を統合してご活用ください。
+      </p>
+      <p class="text-[10px] text-slate-600 pt-2">
+        © 2026 Sippole Dog & Pet Brands. UX Concept Presentation Material.
+      </p>
+    </div>
+  </footer>
+
+  <!-- =========================================================================
+       JavaScript ロジック
+       ========================================================================= -->
+  <script>
+    // --- 1. サンプル商品の定義 (Appと同じ構成、画像は標準相対パス + 美しい代替プレースホルダー) ---
+    const sampleProducts = [
+      {
+        id: 'p1',
+        code: '10001',
+        name: 'Sippole コトコト煮込んだヤギミルクスープ（12袋セット）',
+        category: 'gourmet',
+        categoryLabel: 'フード・グルメ',
+        description: 'やわらかい国産お肉（ささみ・鹿肉・まぐろ）を使用した愛犬用スープセット。ドライフードにトッピングしたり、お出かけ時の水分補給や栄養補給に最適です。（55g×12袋、日本製）',
+        image: './src/assets/images/yagi_milk_soup_1782242057576.jpg',
+        fallbackIcon: 'coffee'
+      },
+      {
+        id: 'p2',
+        code: '70001',
+        name: 'Sippole 3WAY消臭お散歩バッグ',
+        category: 'goods',
+        categoryLabel: 'おでかけ・雑貨',
+        description: 'リュック、ショルダー、手提げの3WAYで使える多機能バッグ。消臭機能付きネームがついており、お散歩中のニオイを軽減。軽量でポケットも多く収納力抜群です。',
+        image: './src/assets/images/dog_walk_bag_1782242071141.jpg',
+        fallbackIcon: 'shopping-bag'
+      },
+      {
+        id: 'p3',
+        code: '80001',
+        name: 'Sippole 2WAYもちふわオーバルベッド',
+        category: 'experience',
+        categoryLabel: 'くつろぎ・ベッド',
+        description: 'もちもちでフワフワな優しい触り心地の犬用オーバルベッド。丸くなって眠る愛犬の体に優しくフィットし、包み込まれるような安心感を提供します。（リバーシブル仕様）',
+        image: './src/assets/images/dog_oval_bed_1782242084396.jpg',
+        fallbackIcon: 'home'
+      }
+    ];
+
+    // --- 2. 各種初期ダミーデータ ---
+    const dummySubmissions = [
+      {
+        id: 'SUB-2026-8001',
+        catalogNumber: '10001',
+        productName: 'Sippole コトコト煮込んだヤギミルクスープ（12袋セット）',
+        name: '犬飼 美香',
+        kana: 'イヌカイ ミカ',
+        zip: '101-0021',
+        address: '東京都千代田区外神田 4丁目5-6',
+        phone: '090-1234-5678',
+        email: 'mika.dog@example.com',
+        notes: '午前中指定でお願いします。',
+        status: 'pending',
+        createdAt: new Date(Date.now() - 3600000 * 2).toISOString() // 2 hours ago
+      },
+      {
+        id: 'SUB-2026-8002',
+        catalogNumber: '80001',
+        productName: 'Sippole 2WAYもちふわオーバルベッド',
+        name: '佐藤 蓮太',
+        kana: 'サトウ レンタ',
+        zip: '530-0001',
+        address: '大阪府大阪市北区梅田 1-2-3 メゾン102',
+        phone: '080-9876-5432',
+        email: 'ren.sato@example.com',
+        notes: '宅配ボックスへの配送を希望します。',
+        status: 'shipping',
+        createdAt: new Date(Date.now() - 3600000 * 24).toISOString() // 24 hours ago
+      }
+    ];
+
+    // --- 3. 状態管理 ---
+    let selectedProduct = null;
+    let currentCategoryFilter = 'all';
+
+    // --- 4. 起動時イニシャライズ ---
+    window.addEventListener('DOMContentLoaded', () => {
+      // localStorageにデータがない場合は初期化
+      if (!localStorage.getItem('catalog_submissions')) {
+        localStorage.setItem('catalog_submissions', JSON.stringify(dummySubmissions));
+      }
+      
+      // アイコンの初期描画
+      lucide.createIcons();
+      
+      // カタログ＆お申込み一覧をレンダリング
+      renderCatalog();
+      renderSubmissions();
+      updateHeaderBadge();
+    });
+
+    // --- 5. カタログのレンダリング ---
+    function renderCatalog() {
+      const grid = document.getElementById('product-grid');
+      grid.innerHTML = '';
+
+      const filtered = currentCategoryFilter === 'all' 
+        ? sampleProducts 
+        : sampleProducts.filter(p => p.category === currentCategoryFilter);
+
+      filtered.forEach(p => {
+        const isSelected = selectedProduct && selectedProduct.id === p.id;
+        
+        const card = document.createElement('div');
+        card.className = `border rounded-xl overflow-hidden bg-white flex flex-col transition-all duration-300 ${
+          isSelected 
+            ? 'ring-2 ring-blue-500 border-blue-500 shadow-md transform -translate-y-0.5' 
+            : 'border-slate-200/80 hover:border-slate-300 hover:shadow-xs'
+        }`;
+        
+        card.innerHTML = `
+          <!-- 画像エリア -->
+          <div class="h-44 bg-slate-100 relative overflow-hidden group">
+            <img src="${p.image}" alt="${p.name}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" onerror="handleImageError(this, '${p.fallbackIcon}')">
+            <span class="absolute top-3 left-3 bg-slate-900/80 backdrop-blur-md text-white text-[9px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider">
+              ${p.categoryLabel}
+            </span>
+          </div>
+
+          <!-- 詳細テキスト -->
+          <div class="p-4 flex-grow flex flex-col justify-between space-y-3.5">
+            <div class="space-y-1.5">
+              <span class="text-[9px] text-slate-400 font-mono font-bold tracking-wider">ハガキコード: ${p.code}</span>
+              <h3 class="text-xs font-bold text-slate-900 line-clamp-2 min-h-[32px]">${p.name}</h3>
+              <p class="text-[10px] text-slate-400 line-clamp-3 leading-relaxed">${p.description}</p>
+            </div>
+
+            <button type="button" onclick="selectProduct('${p.id}')" class="w-full text-center text-xs py-2 px-3 rounded-xl font-bold border transition-all cursor-pointer ${
+              isSelected 
+                ? 'bg-blue-600 text-white border-blue-600 shadow-xs' 
+                : 'bg-white hover:bg-slate-50 text-slate-700 border-slate-200'
+            }">
+              ${isSelected ? '✓ 選択済み' : 'この商品を選択する'}
+            </button>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+      
+      lucide.createIcons();
+    }
+
+    // 画像読み込みエラー時の代替フォールバック表示
+    function handleImageError(img, iconName) {
+      const parent = img.parentElement;
+      parent.innerHTML = `
+        <div class="w-full h-full flex flex-col items-center justify-center text-slate-400 bg-slate-100 gap-2">
+          <i data-lucide="${iconName}" class="w-8 h-8 opacity-75"></i>
+          <span class="text-[9px] text-slate-400">画像ロード中/プレースホルダー</span>
+        </div>
+      `;
+      lucide.createIcons();
+    }
+
+    // --- 6. カタログフィルター ---
+    function filterCatalog(category) {
+      currentCategoryFilter = category;
+      ['all', 'gourmet', 'goods', 'experience'].forEach(cat => {
+        const btn = document.getElementById(`filter-${cat}`);
+        if (cat === category) {
+          btn.className = "px-3 py-1.5 rounded-lg font-medium bg-white text-slate-800 shadow-xs cursor-pointer";
+        } else {
+          btn.className = "px-3 py-1.5 rounded-lg font-medium text-slate-600 hover:text-slate-800 cursor-pointer";
+        }
+      });
+      renderCatalog();
+    }
+
+    // --- 7. 商品の選択・解除 ---
+    function selectProduct(id) {
+      const found = sampleProducts.find(p => p.id === id);
+      if (found) {
+        selectedProduct = found;
+        
+        // フォーム容器を活性化
+        const formContainer = document.getElementById('form-container');
+        formContainer.classList.remove('opacity-60', 'pointer-events-none');
+        
+        // ガイダンスを隠す
+        document.getElementById('selection-guidance').classList.add('hidden');
+        
+        // バナー更新
+        document.getElementById('selected-product-banner').classList.remove('hidden');
+        document.getElementById('selected-product-img').src = found.image;
+        document.getElementById('selected-product-name').innerText = found.name;
+        
+        // パスコードに自動挿入
+        document.getElementById('input-code').value = found.code;
+        
+        renderCatalog();
+        
+        // 入力フォームへスクロール（モバイル向け）
+        if (window.innerWidth < 1024) {
+          formContainer.scrollIntoView({ behavior: 'smooth' });
+        }
+      }
+    }
+
+    function clearProductSelection() {
+      selectedProduct = null;
+      
+      const formContainer = document.getElementById('form-container');
+      formContainer.classList.add('opacity-60', 'pointer-events-none');
+      
+      document.getElementById('selection-guidance').classList.remove('hidden');
+      document.getElementById('selected-product-banner').classList.add('hidden');
+      document.getElementById('input-code').value = '';
+      
+      renderCatalog();
+    }
+
+    // --- 8. タブ切り替え ---
+    function switchTab(tab) {
+      const formView = document.getElementById('form-view');
+      const adminView = document.getElementById('admin-view');
+      const thanksView = document.getElementById('thanks-view');
+      
+      const formBtn = document.getElementById('tab-form-btn');
+      const adminBtn = document.getElementById('tab-admin-btn');
+
+      if (tab === 'form') {
+        formView.classList.remove('hidden');
+        adminView.classList.add('hidden');
+        thanksView.classList.add('hidden');
+        
+        formBtn.className = "text-xs sm:text-sm px-4 py-2 rounded-xl transition-all font-bold bg-blue-600 text-white shadow-xs flex items-center gap-1.5 cursor-pointer";
+        adminBtn.className = "text-xs sm:text-sm px-4 py-2 rounded-xl transition-all text-slate-600 hover:bg-slate-100 flex items-center gap-1.5 relative cursor-pointer";
+      } else if (tab === 'admin') {
+        formView.classList.add('hidden');
+        adminView.classList.remove('hidden');
+        thanksView.classList.add('hidden');
+        
+        formBtn.className = "text-xs sm:text-sm px-4 py-2 rounded-xl transition-all text-slate-600 hover:bg-slate-100 flex items-center gap-1.5 cursor-pointer";
+        adminBtn.className = "text-xs sm:text-sm px-4 py-2 rounded-xl transition-all font-bold bg-blue-600 text-white shadow-xs flex items-center gap-1.5 relative cursor-pointer";
+        
+        renderSubmissions();
+      }
+    }
+
+    // --- 9. お申込み送信処理 ---
+    function handleFormSubmit(event) {
+      event.preventDefault();
+      if (!selectedProduct) return;
+
+      const code = document.getElementById('input-code').value;
+      const name = document.getElementById('input-name').value;
+      const kana = document.getElementById('input-kana').value;
+      const zip = document.getElementById('input-zip').value;
+      const address = document.getElementById('input-address').value;
+      const phone = document.getElementById('input-phone').value;
+      const email = document.getElementById('input-email').value;
+      const notes = document.getElementById('input-notes').value;
+
+      // 新しいお申込みオブジェクト
+      const newId = `SUB-2026-${Math.floor(1000 + Math.random() * 9000)}`;
+      const submission = {
+        id: newId,
+        catalogNumber: code,
+        productName: selectedProduct.name,
+        name: name,
+        kana: kana,
+        zip: zip,
+        address: address,
+        phone: phone,
+        email: email || '',
+        notes: notes || '',
+        status: 'pending',
+        createdAt: new Date().toISOString()
+      };
+
+      // 保存
+      const current = JSON.parse(localStorage.getItem('catalog_submissions') || '[]');
+      current.unshift(submission);
+      localStorage.setItem('catalog_submissions', JSON.stringify(current));
+
+      // 完了画面のレンダリング
+      document.getElementById('thanks-id').innerText = newId;
+      document.getElementById('thanks-product').innerText = selectedProduct.name;
+      document.getElementById('thanks-address').innerText = address;
+
+      // 画面切り替え
+      document.getElementById('form-view').classList.add('hidden');
+      document.getElementById('thanks-view').classList.remove('hidden');
+      
+      // バッジと一覧を更新
+      updateHeaderBadge();
+      renderSubmissions();
+      
+      // フォームを完全にリセット
+      document.getElementById('submission-form').reset();
+      clearProductSelection();
+    }
+
+    // 完了画面から戻る
+    function resetSubmissionForm() {
+      switchTab('form');
+    }
+
+    // デモ用：郵便番号自動検索シミュレーション
+    function simulateZipSearch() {
+      const zipInput = document.getElementById('input-zip');
+      zipInput.value = "150-0041";
+      document.getElementById('input-address').value = "東京都渋谷区神南1丁目19-11 パークビル3階";
+      
+      // エフェクト
+      zipInput.classList.add('ring-2', 'ring-emerald-400');
+      setTimeout(() => {
+        zipInput.classList.remove('ring-2', 'ring-emerald-400');
+      }, 800);
+    }
+
+    // --- 10. 管理者機能：お申込み一覧 & ステータス操作 ---
+    const statusConfig = {
+      pending: { label: '受付完了', bg: 'bg-amber-50 text-amber-700 border-amber-200' },
+      shipping: { label: '配送中', bg: 'bg-blue-50 text-blue-700 border-blue-200' },
+      completed: { label: '発送完了', bg: 'bg-emerald-50 text-emerald-700 border-emerald-200' }
+    };
+
+    function renderSubmissions() {
+      const rowsContainer = document.getElementById('submission-rows');
+      const emptyState = document.getElementById('empty-state');
+      const searchVal = document.getElementById('admin-search').value.toLowerCase();
+      
+      rowsContainer.innerHTML = '';
+      
+      const submissions = JSON.parse(localStorage.getItem('catalog_submissions') || '[]');
+      
+      const filtered = submissions.filter(sub => {
+        return sub.name.toLowerCase().includes(searchVal) || 
+               sub.productName.toLowerCase().includes(searchVal) ||
+               sub.id.toLowerCase().includes(searchVal);
+      });
+
+      // 統計更新
+      document.getElementById('stat-total').innerText = `${submissions.length} 件`;
+      document.getElementById('stat-pending').innerText = `${submissions.filter(s => s.status === 'pending').length} 件`;
+      document.getElementById('stat-shipping').innerText = `${submissions.filter(s => s.status === 'shipping').length} 件`;
+      document.getElementById('stat-completed').innerText = `${submissions.filter(s => s.status === 'completed').length} 件`;
+
+      if (filtered.length === 0) {
+        emptyState.classList.remove('hidden');
+        return;
+      } else {
+        emptyState.classList.add('hidden');
+      }
+
+      filtered.forEach(sub => {
+        const row = document.createElement('tr');
+        row.className = "hover:bg-slate-50/50 transition-colors border-b border-slate-100";
+        
+        const config = statusConfig[sub.status] || statusConfig.pending;
+        const formattedDate = new Date(sub.createdAt).toLocaleString('ja-JP', {
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+
+        row.innerHTML = `
+          <td class="p-3.5 font-medium text-slate-500 whitespace-nowrap">${formattedDate}</td>
+          <td class="p-3.5 font-mono font-bold text-slate-900">${sub.id}</td>
+          <td class="p-3.5 font-mono text-slate-600">${sub.catalogNumber}</td>
+          <td class="p-3.5 font-bold text-slate-800 max-w-[200px] truncate" title="${sub.productName}">
+            ${sub.productName}
+          </td>
+          <td class="p-3.5 space-y-1">
+            <div class="font-bold text-slate-800">${sub.name} <span class="text-[10px] text-slate-400 font-normal">(${sub.kana})</span></div>
+            <div class="text-[10px] text-slate-400">〒${sub.zip} ${sub.address}</div>
+            <div class="text-[10px] text-slate-400">${sub.phone} | ${sub.email || '未入力'}</div>
+            ${sub.notes ? `<div class="text-[9px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded inline-block">要望: ${sub.notes}</div>` : ''}
+          </td>
+          <td class="p-3.5">
+            <select onchange="updateSubmissionStatus('${sub.id}', this.value)" class="text-[11px] font-bold border rounded-lg px-2 py-1 focus:outline-hidden cursor-pointer ${config.bg}">
+              <option value="pending" ${sub.status === 'pending' ? 'selected' : ''}>受付完了</option>
+              <option value="shipping" ${sub.status === 'shipping' ? 'selected' : ''}>配送中</option>
+              <option value="completed" ${sub.status === 'completed' ? 'selected' : ''}>発送完了</option>
+            </select>
+          </td>
+          <td class="p-3.5 text-center">
+            <button onclick="deleteSubmission('${sub.id}')" class="text-slate-400 hover:text-red-600 p-1 rounded-md transition-colors cursor-pointer" title="削除">
+              <i data-lucide="trash" class="w-4 h-4"></i>
+            </button>
+          </td>
+        `;
+        rowsContainer.appendChild(row);
+      });
+
+      lucide.createIcons();
+    }
+
+    function updateSubmissionStatus(id, newStatus) {
+      const submissions = JSON.parse(localStorage.getItem('catalog_submissions') || '[]');
+      const index = submissions.findIndex(s => s.id === id);
+      if (index !== -1) {
+        submissions[index].status = newStatus;
+        localStorage.setItem('catalog_submissions', JSON.stringify(submissions));
+        renderSubmissions();
+        updateHeaderBadge();
+      }
+    }
+
+    function deleteSubmission(id) {
+      if (confirm('このお申込みデータを削除しますか？\n(localStorageから安全に削除されます)')) {
+        const submissions = JSON.parse(localStorage.getItem('catalog_submissions') || '[]');
+        const updated = submissions.filter(s => s.id !== id);
+        localStorage.setItem('catalog_submissions', JSON.stringify(updated));
+        renderSubmissions();
+        updateHeaderBadge();
+      }
+    }
+
+    function updateHeaderBadge() {
+      const submissions = JSON.parse(localStorage.getItem('catalog_submissions') || '[]');
+      const pendingCount = submissions.filter(s => s.status === 'pending').length;
+      const badge = document.getElementById('pending-badge');
+      
+      if (pendingCount > 0) {
+        badge.classList.remove('hidden');
+      } else {
+        badge.classList.add('hidden');
+      }
+    }
+
+    function clearAllData() {
+      if (confirm('すべてのお申込みデータをリセットし、初期デモ状態に戻しますか？')) {
+        localStorage.setItem('catalog_submissions', JSON.stringify(dummySubmissions));
+        document.getElementById('admin-search').value = '';
+        renderSubmissions();
+        updateHeaderBadge();
+      }
+    }
+
+    // --- 11. CSVダウンロード機能 ---
+    function downloadCSV() {
+      const submissions = JSON.parse(localStorage.getItem('catalog_submissions') || '[]');
+      if (submissions.length === 0) {
+        alert('ダウンロードするデータがありません。');
+        return;
+      }
+
+      // BOM付きUTF-8
+      let csvContent = "\uFEFF";
+      
+      // ヘッダー行
+      const headers = ['受付日時', '受付番号', 'カタログ番号', '選択された商品', 'お名前', 'フリガナ', '郵便番号', 'ご住所', '電話番号', 'メールアドレス', 'ご要望', '配送状況'];
+      csvContent += headers.map(h => `"${h.replace(/"/g, '""')}"`).join(',') + "\r\n";
+
+      // データ行
+      submissions.forEach(sub => {
+        const dateStr = new Date(sub.createdAt).toLocaleString('ja-JP');
+        const statusLabel = statusConfig[sub.status] ? statusConfig[sub.status].label : '受付完了';
+        const row = [
+          dateStr,
+          sub.id,
+          sub.catalogNumber,
+          sub.productName,
+          sub.name,
+          sub.kana,
+          sub.zip,
+          sub.address,
+          sub.phone,
+          sub.email || '',
+          sub.notes || '',
+          statusLabel
+        ];
+        csvContent += row.map(r => `"${String(r).replace(/"/g, '""')}"`).join(',') + "\r\n";
+      });
+
+      // Blobを作成してダウンロードトリガー
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.setAttribute("href", url);
+      link.setAttribute("download", `sippole_catalog_submissions_${new Date().toISOString().slice(0, 10)}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  </script>
+</body>
+</html>
