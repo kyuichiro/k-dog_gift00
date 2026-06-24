@@ -298,12 +298,26 @@
           </div>
 
           <!-- カタログの強み解説カード -->
-          <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-2xs space-y-4">
-            <h4 class="text-xs font-bold text-slate-800 flex items-center gap-1.5 pb-2.5 border-b border-slate-100">
-              <i data-lucide="sparkles" class="text-blue-600 w-4 h-4"></i>
-              WEBカタログ一体型の特徴
-            </h4>
-            <div class="space-y-3">
+          <div class="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-2xs transition-all duration-300">
+            <div 
+              onclick="toggleFeaturesDetails()"
+              class="p-5 bg-slate-50/50 flex items-center justify-between gap-3 cursor-pointer hover:bg-slate-50 transition-colors select-none"
+            >
+              <div class="flex items-center gap-3">
+                <div class="p-2 bg-white rounded-lg border border-slate-200 shadow-2xs text-blue-600">
+                  <i data-lucide="sparkles" class="w-5 h-5"></i>
+                </div>
+                <div>
+                  <h3 class="font-bold text-slate-800 text-xs">WEBカタログ一体型の特徴</h3>
+                  <p class="text-[10px] text-slate-500 mt-0.5">デジタルカタログならではの強みと特徴</p>
+                </div>
+              </div>
+              <div class="text-slate-400 p-1 hover:text-slate-600 rounded-lg shrink-0 transition-colors">
+                <i id="features-toggle-icon" data-lucide="chevron-down" class="w-5 h-5"></i>
+              </div>
+            </div>
+            
+            <div id="features-details" class="hidden p-5 space-y-3 border-t border-slate-100 animate-fadeIn">
               <div class="flex items-start gap-2.5">
                 <div class="p-1 bg-blue-50 text-blue-600 rounded-md mt-0.5">
                   <i data-lucide="shopping-bag" class="w-3.5 h-3.5"></i>
@@ -1015,6 +1029,22 @@
       const icon = document.getElementById('exp-toggle-icon');
       
       if (isExpOpen) {
+        details.classList.remove('hidden');
+        icon.setAttribute('data-lucide', 'chevron-up');
+      } else {
+        details.classList.add('hidden');
+        icon.setAttribute('data-lucide', 'chevron-down');
+      }
+      lucide.createIcons();
+    }
+
+    let isFeaturesOpen = false;
+    function toggleFeaturesDetails() {
+      isFeaturesOpen = !isFeaturesOpen;
+      const details = document.getElementById('features-details');
+      const icon = document.getElementById('features-toggle-icon');
+      
+      if (isFeaturesOpen) {
         details.classList.remove('hidden');
         icon.setAttribute('data-lucide', 'chevron-up');
       } else {
